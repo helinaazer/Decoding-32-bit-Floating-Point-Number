@@ -1,0 +1,107 @@
+00004000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.16.01
+Created On: 4/23/2021 10:18:38 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      : Homework 2 Question 4
+00000000                             3  * Written by : Helina Azer
+00000000                             4  * Date       : 4/19/2021
+00000000                             5  * Description: Decode a 32-bit floating point number into sign bit, exponent, and mantissa bits
+00000000                             6  *-----------------------------------------------------------
+00000000  =0000000D                  7  CR  EQU    $0D
+00000000  =0000000A                  8  LF  EQU    $0A
+00000000                             9  
+00000000                            10  INPUT                       DS.B 0
+00000000= 45 6E 74 65 72 20 ...     11  PROMPT                      DC.B 'Enter number in decimal: ' , 0 
+0000001A= 53 69 67 6E 20 62 ...     12  SIGNBITRESULT               DC.B 'Sign bit: ' , 0
+00000025= 45 78 70 6F 6E 65 ...     13  EXPONENTRESULT              DC.B 'Exponent: ' , 0
+00000030= 4D 61 6E 74 69 73 ...     14  MANTISSARESULT              DC.B 'Mantissa: ' , 0
+0000003B= 53 69 67 6E 20 62 ...     15  NEGATIVESIGN                DC.B 'Sign bit: -' , CR, LF, 0
+00000049= 53 69 67 6E 20 62 ...     16  POSITIVESIGN                DC.B 'Sign bit: +' , CR, LF, 0
+00000057= 20 0D 0A 00               17  BREAK                       DC.B ' ' , CR, LF, 0    
+0000005B                            18  
+00004000                            19      ORG    $4000
+00004000                            20      
+00004000                            21  START:                                                                ; first instruction of program
+00004000                            22  
+00004000  4240                      23      CLR                     D0
+00004002  43F8 0000                 24      LEA                     PROMPT, A1                                ; Load input message
+00004006  103C 000E                 25      MOVE.B                  #14, D0
+0000400A  4E4F                      26      TRAP                    #15
+0000400C  103C 0004                 27      MOVE.B                  #4,D0
+00004010  4E4F                      28      TRAP                    #15
+00004012  21C1 0000                 29      MOVE.L                  D1, INPUT                                 ; move the user input into D1
+00004016                            30      
+00004016                            31  FINDSIGNBIT:
+00004016                            32   
+00004016  2601                      33      MOVE.L                  D1, D3
+00004018  6B00 0010                 34      BMI                     NEGATIVE
+0000401C  43F8 0049                 35      LEA                     POSITIVESIGN, A1
+00004020  103C 000E                 36      MOVE.B                  #14, D0
+00004024  4E4F                      37      TRAP                    #15
+00004026  6000 000C                 38      BRA                     FINDEXPONENT
+0000402A                            39      
+0000402A                            40  NEGATIVE:
+0000402A                            41  
+0000402A  43F8 003B                 42      LEA                     NEGATIVESIGN, A1
+0000402E  103C 000E                 43      MOVE.B                  #14, D0
+00004032  4E4F                      44      TRAP #15
+00004034                            45      
+00004034                            46  FINDEXPONENT:
+00004034                            47  
+00004034  2801                      48      MOVE.L                  D1, D4
+00004036  E19C                      49      ROL.L                   #$08, D4                                  ; Move left by 9 bits to get Exponenent
+00004038  E39C                      50      ROL.L                   #$01, D4
+0000403A  43F8 0025                 51      LEA                     EXPONENTRESULT, A1
+0000403E  103C 000E                 52      MOVE.B                  #14, D0         
+00004042  4E4F                      53      TRAP                    #15                                       ; Trap 15
+00004044  4281                      54      CLR.L                   D1                                        ; Clear D1
+00004046  1204                      55      MOVE.B                  D4, D1
+00004048  103C 0003                 56      MOVE.B                  #3,D0
+0000404C  4E4F                      57      TRAP                    #15                                       ; Trap 15
+0000404E  43F8 0057                 58      LEA BREAK,              A1
+00004052  103C 000E                 59      MOVE.B                  #14, D0
+00004056  4E4F                      60      TRAP                    #15                                       ; Trap 15
+00004058  4281                      61      CLR.L                   D1                                        ; Clear D1
+0000405A                            62      
+0000405A                            63  FINDMANTISSA:
+0000405A                            64  
+0000405A  2A38 0000                 65      MOVE.L                  INPUT, D5
+0000405E  E18D                      66      LSL.L                   #8, D5
+00004060  E38D                      67      LSL.L                   #1, D5                                    ; Shift left for mantissa
+00004062  E08D                      68      LSR.L                   #8, D5
+00004064  E28D                      69      LSR.L                   #1, D5                                    ; Shift right when there are leading 0s
+00004066  43F8 0030                 70      LEA                     MANTISSARESULT, A1
+0000406A  103C 000E                 71      MOVE.B                  #14, D0
+0000406E  4E4F                      72      TRAP                    #15                                       ; Trap 15
+00004070  4281                      73      CLR.L                   D1                                        ; Clear D1
+00004072  2205                      74      MOVE.L                  D5, D1                                    ; Move D5 into D1
+00004074  103C 0003                 75      MOVE.B                  #3, D0                                    ; Move decimal into D0
+00004078  4E4F                      76      TRAP                    #15                                       ; Trap 15
+0000407A                            77      
+0000407A  FFFF FFFF                 78      SIMHALT             ; halt simulator
+0000407E                            79  
+0000407E                            80      END    START       ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+BREAK               57
+CR                  D
+EXPONENTRESULT      25
+FINDEXPONENT        4034
+FINDMANTISSA        405A
+FINDSIGNBIT         4016
+INPUT               0
+LF                  A
+MANTISSARESULT      30
+NEGATIVE            402A
+NEGATIVESIGN        3B
+POSITIVESIGN        49
+PROMPT              0
+SIGNBITRESULT       1A
+START               4000
